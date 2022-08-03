@@ -38,14 +38,21 @@ for year in electionCycles:
 # aggregation config
 aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
 
-# combine donation amounts for same recepient within an election cycle
-for cycleYear in dataByCycle.keys():
-    dataByCycle[cycleYear] = dataByCycle[cycleYear].groupby(dataByCycle[cycleYear]['committee_name']).aggregate(aggregation_functions)
-# with open('readme.txt', 'w') as f:
-#     f.write('readme')
+# open txt file to write to
+
+with open(fileName.split('.')[0] + '_summary.txt', 'w') as summaryFile:
+    # combine donation amounts for same recepient within an election cycle
+    for cycleYear in dataByCycle.keys():
+        dataByCycle[cycleYear] = dataByCycle[cycleYear].groupby(dataByCycle[cycleYear]['committee_name']).aggregate(aggregation_functions)
+        dataByCycle[cycleYear].rename(columns={"contribution_receipt_amount": "total_amount"}, inplace=True)
+        # sort by amount descending
+        dataByCycle[cycleYear].sort_values(by=['total_amount'], ascending=False, inplace=True)
+    #     f.write('readme')
 
 
 print(dataByCycle[2020])
+print(type(dataByCycle[2020]))
+
 
 # print(electionCycles)
 # print(data)
