@@ -4,9 +4,14 @@ import pandas as pd
 import os
 import collections
 import math
+import glob
 
 
 # FUNCTIONS ===================================================================
+
+def getAllCSVFiles():
+    path = os.getcwd()
+    return glob.glob(os.path.join(path, "*.csv"))
 
 def even(x):
     return x % 2 == 0
@@ -45,56 +50,57 @@ def writeToFile():
             summaryFile.write('\n\n')
 
         summaryFile.close()
-        
+
 
 # =============================================================================
+allFiles = getAllCSVFiles()
 
-# handle file importing and file names
-fileName = 'robert_dyson.csv'
-donorNameString = fileName.split('.')[0]
-summaryFileName = f'{donorNameString}_summary.txt'
-summaryFilePath = f'./{summaryFileName}'
+for file in allFiles:
+    # handle file importing and file names
+    fileName = file
 
-# create exclusion list 
-exclusionList = createExclusionList()
+     # read in csv and strip unnecessary columns
+    rawDataframe = pd.read_csv(fileName)
+    data = rawDataframe[['committee_name', 'report_year', 'contribution_receipt_amount', 'contributor_first_name', 'contributor_last_name']]
 
-# read in csv and strip unnecessary columns
-rawDataframe = pd.read_csv(fileName)
-data = rawDataframe[['committee_name', 'report_year', 'contribution_receipt_amount']]
+    # create summary fileName with donor name
+    donorNameString = str(data['contributor_last_name'][0]).upper() + '_' + str(data['contributor_first_name'][0]).upper()
+    summaryFileName = f'{donorNameString}_summary.txt'
+    summaryFilePath = f'./{summaryFileName}'
 
-# make names proper case taking into consideration exclusions
-for index in data.index:
-    updatedName = makeProperCaseWithExclusions(data['committee_name'][index], exclusionList)
-    data.at[index, 'committee_name'] = updatedName
+    # create exclusion list 
+    exclusionList = createExclusionList()
 
-# get array of election cycles (include even year and previous year)
-electionCycles = list(filter(even, data['report_year'].unique()))
-electionCycles.sort(reverse=False)
+    # make names proper case taking into consideration exclusions
+    for index in data.index:
+        updatedName = makeProperCaseWithExclusions(data['committee_name'][index], exclusionList)
+        data.at[index, 'committee_name'] = updatedName
 
-# temp allYears
-allYears = []
-for year in electionCycles:
-    allYears.append(year - 1)
-    allYears.append(year)
+    # get array of election cycles (include even year and previous year)
+    electionCycles = list(filter(even, data['report_year'].unique()))
+    electionCycles.sort(reverse=False)
 
-# dictionary for dataframe per year
-dataByYear = {year : pd.DataFrame() for year in allYears}
-for key in dataByYear.keys():
-    dataByYear[key] = data[:][data['report_year'] == key]
+    # temp allYears
+    allYears = []
+    for year in electionCycles:
+        allYears.append(year - 1)
+        allYears.append(year)
 
-# concatenate yearly data by cycle
-dataByCycle = {year : pd.DataFrame() for year in electionCycles}
-for year in electionCycles:
-    currElectionCycleDFs = [dataByYear[year - 1], dataByYear[year]]
-    dataByCycle[year] = pd.concat(currElectionCycleDFs)
+    # dictionary for dataframe per year
+    dataByYear = {year : pd.DataFrame() for year in allYears}
+    for key in dataByYear.keys():
+        dataByYear[key] = data[:][data['report_year'] == key]
 
-# sort in descending order by year
-dataByCycle = collections.OrderedDict(sorted(dataByCycle.items(), reverse=True))
+    # concatenate yearly data by cycle
+    dataByCycle = {year : pd.DataFrame() for year in electionCycles}
+    for year in electionCycles:
+        currElectionCycleDFs = [dataByYear[year - 1], dataByYear[year]]
+        dataByCycle[year] = pd.concat(currElectionCycleDFs)
 
-# aggregation config
-aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
+    # sort in descending order by year
+    dataByCycle = collections.OrderedDict(sorted(dataByCycle.items(), reverse=True))
 
-writeToFile()
+    # aggregation config
+    aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
 
-
-print(dataByCycle[2020])
+    writeToFile()
