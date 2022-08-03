@@ -18,7 +18,7 @@ This program will take exported .csv files of FEC donors from: https://www.fec.g
 ## Running the program
 - Manually download .csv file from FEC site for a single donor: https://www.fec.gov/data/receipts/?data_type=processed
 - Drag 1 or more of these .csv files to the `donor-speed-skating` folder on your desktop
-- In the terminal, make sure you are in your desktop with: `cd ~/Desktop`
+- In the terminal, make sure you are in your repo folder with: `cd ~/Desktop/donor-speed-skating`
 - Run the following command to create summary files for each donor: `python3 donor-list.py`
 - You should see .txt files appear in the same folder. Copy and paste them to word doc or wherever
 
