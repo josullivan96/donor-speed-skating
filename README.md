@@ -23,4 +23,4 @@ This program will take exported .csv files of FEC donors from: https://www.fec.g
 - You should see .txt files appear in the same folder. Copy and paste them to word doc or wherever
 
 ## Custom Naming Capitalization
-- If you do not want a committee/recipient name in proper case, add the exact spelling and casing to a new line in the `special-case
+- If you do not want a committee/recipient name in proper case, add the exact spelling and casing to a new line in the `special-case-names.txt` file
