@@ -21,3 +21,6 @@ This program will take exported .csv files of FEC donors from: https://www.fec.g
 - In the terminal, make sure you are in your desktop with: `cd ~/Desktop`
 - Run the following command to create summary files for each donor: `python3 donor-list.py`
 - You should see .txt files appear in the same folder. Copy and paste them to word doc or wherever
+
+## Custom Naming Capitalization
+- If you do not want a committee/recipient name in proper case, add the exact spelling and casing to a new line in the `special-case
