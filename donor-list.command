@@ -1,4 +1,13 @@
+#!/usr/bin/env python3
+
 import pandas as pd
+import os
+import collections
+import math
+import pdb; 
+
+# for debugging
+pdb.set_trace()
 
 # FUNCTIONS ===================================================================
 
@@ -7,8 +16,11 @@ def even(x):
 
 # =============================================================================
 
-# handle file importing
+# handle file importing and file names
 fileName = 'robert_dyson.csv'
+donorNameString = fileName.split('.')[0]
+summaryFileName = f'{donorNameString}_summary.txt'
+summaryFilePath = f'./{summaryFileName}'
 
 # read in csv and strip unnecessary columns
 rawDataframe = pd.read_csv(fileName)
@@ -35,25 +47,30 @@ for year in electionCycles:
     currElectionCycleDFs = [dataByYear[year - 1], dataByYear[year]]
     dataByCycle[year] = pd.concat(currElectionCycleDFs)
 
+# sort in descending order by year
+dataByCycle = collections.OrderedDict(sorted(dataByCycle.items(), reverse=True))
+
 # aggregation config
 aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
 
 # open txt file to write to
-
-with open(fileName.split('.')[0] + '_summary.txt', 'w') as summaryFile:
-    # combine donation amounts for same recepient within an election cycle
+if os.path.exists(summaryFilePath): # delete file if exists
+    os.remove(summaryFilePath)
+with open(summaryFileName, 'w') as summaryFile:
     for cycleYear in dataByCycle.keys():
-        dataByCycle[cycleYear] = dataByCycle[cycleYear].groupby(dataByCycle[cycleYear]['committee_name']).aggregate(aggregation_functions)
+        # aggregate amounts of same recipient
+        dataByCycle[cycleYear] = dataByCycle[cycleYear].groupby(dataByCycle[cycleYear]['committee_name'], as_index=False).aggregate(aggregation_functions)
         dataByCycle[cycleYear].rename(columns={"contribution_receipt_amount": "total_amount"}, inplace=True)
+
         # sort by amount descending
         dataByCycle[cycleYear].sort_values(by=['total_amount'], ascending=False, inplace=True)
-    #     f.write('readme')
 
+        # write to file
+        summaryFile.write(f'* {str(cycleYear)} --')
+        for index in dataByCycle[cycleYear].index:
+            summaryFile.write(' ' + str(dataByCycle[cycleYear]['committee_name'][index]) + ' $' + str(format(math.floor(dataByCycle[cycleYear]['total_amount'][index]), ',d')) + ';')
+        
+        summaryFile.write('\n\n')
 
-print(dataByCycle[2020])
-print(type(dataByCycle[2020]))
-
-
-# print(electionCycles)
-# print(data)
+    summaryFile.close()
 
