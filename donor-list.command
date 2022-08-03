@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
-
 import pandas as pd
 import os
 import collections
 import math
-import pdb; 
 
-# for debugging
-pdb.set_trace()
 
 # FUNCTIONS ===================================================================
 
