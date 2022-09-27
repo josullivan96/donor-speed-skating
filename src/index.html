@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css">
     <title>Donor Speed Skating</title>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>Donor Speed Skating</h1>
+      <h1>Donor Speed Skating</h1>
     </header>
     <main>
-        <section id="dragAndDrop">
-            <div id="dropContainer" style="border:1px solid black;height:100px;">
-                Drop Here
-             </div>
-               Should update here:
-               <input type="file" id="fileInput" />
-        </section>
+      <section id="dragAndDrop">
+        <div
+          id="drop_zone"
+          ondrop="dropHandler(event);"
+          ondragover="dragOverHandler(event);"
+        >
+          <p>Drag one or more files to this <i>drop zone</i>.</p>
+        </div>
+        Should update here:
+        <input type="file" id="fileInput" />
+      </section>
+      
+      <section id="output">
+        <div id="textbox">
+          <p id="formatted-text"></p>
+        </div>
+      </section>
     </main>
-</body>
+  </body>
+  <script src="./index.js"></script>
 </html>

@@ -1,19 +1,29 @@
-// dragover and dragenter events need to have 'preventDefault' called
-// in order for the 'drop' event to register. 
-// See: https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations#droptargets
-dropContainer.ondragover = dropContainer.ondragenter = function(evt) {
-    evt.preventDefault();
-  };
-  
-  dropContainer.ondrop = function(evt) {
-    // pretty simple -- but not for IE :(
-    fileInput.files = evt.dataTransfer.files;
-  
-    // If you want to use some of the dropped files
-    const dT = new DataTransfer();
-    dT.items.add(evt.dataTransfer.files[0]);
-    dT.items.add(evt.dataTransfer.files[3]);
-    fileInput.files = dT.files;
-  
-    evt.preventDefault();
-  };
+function dropHandler(ev) {
+  console.log('File(s) dropped');
+
+  // Prevent default behavior (Prevent file from being opened)
+  ev.preventDefault();
+
+  if (ev.dataTransfer.items) {
+    // Use DataTransferItemList interface to access the file(s)
+    [...ev.dataTransfer.items].forEach((item, i) => {
+      // If dropped items aren't files, reject them
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        console.log(`… file[${i}].name = ${file.name}`);
+      }
+    });
+  } else {
+    // Use DataTransfer interface to access the file(s)
+    [...ev.dataTransfer.files].forEach((file, i) => {
+      console.log(`… file[${i}].name = ${file.name}`);
+    });
+  }
+}
+
+function dragOverHandler(ev) {
+  console.log('File(s) in drop zone');
+
+  // Prevent default behavior (Prevent file from being opened)
+  ev.preventDefault();
+}
