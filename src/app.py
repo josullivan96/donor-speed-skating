@@ -1,59 +1,69 @@
 import pandas as pd
 import collections
 
-from donor_list import CSVHandler
+from donor_csv_handler import DonorCSVHandler
 
 
-# =============================================================================
-allFiles = CSVHandler.getAllCSVFiles()
-for file in allFiles:
-    # handle file importing and file names
-    fileName = file
+def handle_all_files(all_files):
 
-     # read in csv and strip unnecessary columns
-    rawDataframe = pd.read_csv(fileName)
-    data = rawDataframe[['committee_name', 'report_year', 'contribution_receipt_amount', 'contributor_first_name', 'contributor_last_name']]
+    for file in all_files:
+        # handle file importing and file names
+        file_name = file
 
-    # create summary fileName with donor name
-    # ADD TO different file
-    donorNameString = str(data['contributor_last_name'][0]).upper() + '_' + str(data['contributor_first_name'][0]).upper()
-    summaryFileName = f'{donorNameString}_summary.txt'
-    summaryFilePath = f'./{summaryFileName}'
+        # read in csv and strip unnecessary columns
+        raw_dataframe = pd.read_csv(file_name)
+        data = raw_dataframe[['committee_name', 'report_year', 'contribution_receipt_amount', 'contributor_first_name', 'contributor_last_name']]
 
-    # create exclusion list 
-    exclusionList = CSVHandler.createExclusionList()
+        # create summary file_name with donor name
+        # ADD TO different file
+        donor_name_string = str(data['contributor_last_name'][0]).upper() + '_' + str(data['contributor_first_name'][0]).upper()
+        summary_file_name = f'{donor_name_string}_summary.txt'
+        summary_file_path = f'./{summary_file_name}'
 
-    # make names proper case taking into consideration exclusions
-    for index in data.index:
-        updatedName = CSVHandler.makeProperCaseWithExclusions(data['committee_name'][index], exclusionList)
-        data.at[index, 'committee_name'] = updatedName
+        # create exclusion list 
+        exclusion_list = DonorCSVHandler.create_exclusion_list()
 
-    # get array of election cycles (include even year and previous year)
-    electionCycles = list(filter(CSVHandler.even, data['report_year'].unique()))
-    electionCycles.sort(reverse=False)
+        # make names proper case taking into consideration exclusions
+        for index in data.index:
+            updated_name = DonorCSVHandler.make_proper_case_with_exclusions(data['committee_name'][index], exclusion_list)
+            data.at[index, 'committee_name'] = updated_name
 
-    # temp allYears
-    allYears = []
-    for year in electionCycles:
-        allYears.append(year - 1)
-        allYears.append(year)
+        # get array of election cycles (include even year and previous year)
+        election_cycles = list(filter(DonorCSVHandler.even, data['report_year'].unique()))
+        election_cycles.sort(reverse=False)
 
-    # dictionary for dataframe per year
-    dataByYear = {year : pd.DataFrame() for year in allYears}
-    for key in dataByYear.keys():
-        dataByYear[key] = data[:][data['report_year'] == key]
+        # temp all_years
+        all_years = []
+        for year in election_cycles:
+            all_years.append(year - 1)
+            all_years.append(year)
 
-    # concatenate yearly data by cycle
-    dataByCycle = {year : pd.DataFrame() for year in electionCycles}
-    for year in electionCycles:
-        currElectionCycleDFs = [dataByYear[year - 1], dataByYear[year]]
-        dataByCycle[year] = pd.concat(currElectionCycleDFs)
+        # dictionary for dataframe per year
+        data_by_year = {year : pd.DataFrame() for year in all_years}
+        for key in data_by_year.keys():
+            data_by_year[key] = data[:][data['report_year'] == key]
 
-    # sort in descending order by year
-    dataByCycle = collections.OrderedDict(sorted(dataByCycle.items(), reverse=True))
+        # concatenate yearly data by cycle
+        data_by_cycle = {year : pd.DataFrame() for year in election_cycles}
+        for year in election_cycles:
+            curr_election_cycle_dataframes = [data_by_year[year - 1], data_by_year[year]]
+            data_by_cycle[year] = pd.concat(curr_election_cycle_dataframes)
 
-    # aggregation config
-    # ADD TO CONSTANTS
-    aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
+        # sort in descending order by year
+        data_by_cycle = collections.OrderedDict(sorted(data_by_cycle.items(), reverse=True))
 
-    CSVHandler.writeToFile(summaryFileName, summaryFilePath, dataByCycle, aggregation_functions)
+        # aggregation config
+        # ADD TO CONSTANTS
+        aggregation_functions = {'report_year': 'first', 'contribution_receipt_amount': 'sum'}
+
+        DonorCSVHandler.write_to_file(summary_file_name, summary_file_path, data_by_cycle, aggregation_functions)
+
+def get_all_files():
+    return DonorCSVHandler.get_all_csv_files()
+
+def main():
+    all_files = get_all_files()
+    handle_all_files(all_files)
+
+if __name__=="__main__":
+    main()
